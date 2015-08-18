@@ -8,7 +8,12 @@ class Stack {
     private $stack = array();
     private $position = 0;
 
-    public function push(callable $callable) {
+    public function push($callable) {
+
+        if(!is_callable($callable) && !is_object($callable)) {
+            throw new \Exception('\Wiring\Stack requires a callable or object which implements the resolve method');
+        }
+
         $this->stack[] = $callable;
     }
 
@@ -44,7 +49,16 @@ class Stack {
      */
     public static function resolve($stack, $app) {
         foreach($stack as $item) {
-            call_user_func($stack, $app);
+            try {
+                if(is_callable($object)) {
+                    call_user_func($item, $stack, $app);
+                } else {
+                    $item->resolve($stack, $app);
+                }
+            } catch (\Wiring\Stack\Exception\FailedCheck $e) {
+                // Failed the Test
+                break;
+            }
         }
     }
 }
